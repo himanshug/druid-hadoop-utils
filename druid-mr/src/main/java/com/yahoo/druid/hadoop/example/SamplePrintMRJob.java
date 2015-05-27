@@ -11,8 +11,7 @@
 package com.yahoo.druid.hadoop.example;
 
 
-import java.util.Map;
-
+import com.yahoo.druid.hadoop.DruidInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.mapreduce.Job;
@@ -21,7 +20,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.joda.time.DateTime;
 
-import com.yahoo.druid.hadoop.DruidInputFormat;
+import java.util.Map;
 
 public class SamplePrintMRJob extends Configured implements Tool
 {

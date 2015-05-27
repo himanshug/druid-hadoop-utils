@@ -10,21 +10,20 @@
 */
 package com.yahoo.druid.pig.udfs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.yahoo.druid.hadoop.DruidInitialization;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.BufferAggregator;
+import io.druid.query.extraction.ExtractionFn;
 import io.druid.segment.ColumnSelectorFactory;
 import io.druid.segment.DimensionSelector;
 import io.druid.segment.FloatColumnSelector;
+import io.druid.segment.LongColumnSelector;
 import io.druid.segment.ObjectColumnSelector;
-import io.druid.segment.TimestampColumnSelector;
 import io.druid.segment.data.ObjectStrategy;
 import io.druid.segment.serde.ComplexMetricSerde;
 import io.druid.segment.serde.ComplexMetrics;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Iterator;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pig.EvalFunc;
@@ -35,9 +34,9 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.yahoo.druid.hadoop.DruidInitialization;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Iterator;
 
 /**
  * Generic UDF to work with any druid complex metric aggregation. 
@@ -130,13 +129,13 @@ class InternalColumnSelectorFactory implements ColumnSelectorFactory
   }
 
   @Override
-  public TimestampColumnSelector makeTimestampColumnSelector()
+  public LongColumnSelector makeLongColumnSelector(String paramString)
   {
     throw new IllegalStateException("not supported");
   }
 
   @Override
-  public DimensionSelector makeDimensionSelector(String paramString)
+  public DimensionSelector makeDimensionSelector(String paramString, ExtractionFn extractionFn)
   {
     throw new IllegalStateException("not supported");
   }

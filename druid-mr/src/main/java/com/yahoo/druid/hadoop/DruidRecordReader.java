@@ -10,15 +10,17 @@
 */
 package com.yahoo.druid.hadoop;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import io.druid.data.input.MapBasedRow;
+import io.druid.granularity.QueryGranularity;
 import io.druid.query.filter.DimFilter;
-import io.druid.utils.CompressionUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import io.druid.segment.IndexIO;
+import io.druid.segment.QueryableIndex;
+import io.druid.segment.QueryableIndexStorageAdapter;
+import io.druid.segment.StorageAdapter;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -31,18 +33,26 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Files;
-import com.metamx.common.guava.Yielder;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class DruidRecordReader extends RecordReader<DateTime, Map<String,Object>>
 {
 
   private static final Logger logger = LoggerFactory.getLogger(DruidRecordReader.class);
 
-  private Yielder<MapBasedRow> rowYielder;
+  private IngestSegmentFirehose rowYielder;
   
   private MapBasedRow currRow;
+
+  private File segmentDir;
 
   @Override
   public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException
@@ -58,25 +68,27 @@ public class DruidRecordReader extends RecordReader<DateTime, Map<String,Object>
     String hdfsPath = ((DruidInputSplit)split).getPath();
     logger.info("Reading segment from " + hdfsPath);
     
-    File segmentDir = Files.createTempDir();
+    segmentDir = Files.createTempDir();
     logger.info("segment dir: " + segmentDir);
     
     FileSystem fs = FileSystem.get(context.getConfiguration());
     getSegmentFiles(hdfsPath, segmentDir, fs);
     logger.info("finished getting segment files");
-    
-    rowYielder = new DruidHelper().getRowYielder(segmentDir, interval, dimensions, metrics, filter);
+
+    QueryableIndex index = IndexIO.loadIndex(segmentDir);
+    StorageAdapter adapter = new QueryableIndexStorageAdapter(index);
+    List<StorageAdapter> adapters = Lists.newArrayList(adapter);
+    rowYielder = new IngestSegmentFirehose(adapters, dimensions, metrics, filter, interval, QueryGranularity.NONE);
   }
 
   @Override
   public boolean nextKeyValue() throws IOException, InterruptedException
   {
-    if(rowYielder.isDone()) {
-      return false;
-    } else {
-      currRow = rowYielder.get();
-      rowYielder = rowYielder.next(currRow);
+    if (rowYielder.hasMore()) {
+      currRow = (MapBasedRow)rowYielder.nextRow();
       return true;
+    } else {
+      return false;
     }
   }
 
@@ -102,7 +114,9 @@ public class DruidRecordReader extends RecordReader<DateTime, Map<String,Object>
   @Override
   public void close() throws IOException
   {
-    //TODO: may be delete the copied data and delete memory mapping etc
+    if(segmentDir != null) {
+      FileUtils.deleteDirectory(segmentDir);
+    }
   }
   
   private void getSegmentFiles(String pathStr, File dir, FileSystem fs) throws IOException
@@ -110,12 +124,47 @@ public class DruidRecordReader extends RecordReader<DateTime, Map<String,Object>
     if(!dir.exists() && !dir.mkdirs()) {
       throw new IOException(dir + " does not exist and creation failed");
     }
-    final Path path = new Path(pathStr);
-    try (FSDataInputStream in = fs.open(path)) {
-          CompressionUtils.unzip(in, dir);
+
+    final File tmpDownloadFile = File.createTempFile("dataSegment", ".zip");
+    if (tmpDownloadFile.exists() && !tmpDownloadFile.delete()) {
+      logger.warn("Couldn't clear out temporary file [%s]", tmpDownloadFile);
+    }
+
+    try {
+      final Path inPath = new Path(pathStr);
+      fs.copyToLocalFile(false, inPath, new Path(tmpDownloadFile.toURI()));
+
+      long size = 0L;
+      try (final ZipInputStream zipInputStream = new ZipInputStream(
+          new BufferedInputStream(
+              new FileInputStream(
+                  tmpDownloadFile
+              )
+          )
+      )) {
+        final byte[] buffer = new byte[1 << 13];
+        for (ZipEntry entry = zipInputStream.getNextEntry(); entry != null; entry = zipInputStream.getNextEntry()) {
+          final String fileName = entry.getName();
+          try (final FileOutputStream fos = new FileOutputStream(
+              dir.getAbsolutePath()
+              + File.separator
+              + fileName
+          )) {
+            for (int len = zipInputStream.read(buffer); len >= 0; len = zipInputStream.read(buffer)) {
+              size += len;
+              fos.write(buffer, 0, len);
+            }
+          }
+        }
+      }
+    }
+    finally {
+      if (tmpDownloadFile.exists() && !tmpDownloadFile.delete()) {
+        logger.warn("Temporary download file could not be deleted [%s]", tmpDownloadFile);
+      }
     }
   }
-  
+
   public static SegmentLoadSpec readSegmentJobSpec(Configuration config, ObjectMapper jsonMapper) {
     try {
       //first see if schema json itself is present in the config
