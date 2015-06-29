@@ -82,8 +82,8 @@ public class DruidHelper
         out.close();
         int responseCode = conn.getResponseCode();
         if(responseCode == 200) {
-          ObjectMapper mapper = new DefaultObjectMapper();
-          Map<String,Object> obj = 
+          ObjectMapper mapper = DruidInitialization.getInstance().getObjectMapper();
+          Map<String,Object> obj =
             mapper.readValue(conn.getInputStream(), new TypeReference<Map<String,Object>>(){});
           return mapper.convertValue(obj.get("result"), new TypeReference<List<DataSegment>>(){});
         } else {

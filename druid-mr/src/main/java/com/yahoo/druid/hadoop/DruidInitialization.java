@@ -10,17 +10,17 @@
 */
 package com.yahoo.druid.hadoop;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.inject.Injector;
 import io.druid.guice.GuiceInjectors;
+import io.druid.guice.ServerModule;
 import io.druid.initialization.DruidModule;
-
-import java.util.ServiceLoader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import java.util.List;
+import java.util.ServiceLoader;
 
 public class DruidInitialization
 {
@@ -32,12 +32,13 @@ public class DruidInitialization
   private static final DruidInitialization instance = new DruidInitialization();
   
   private DruidInitialization() {
-    ServiceLoader<DruidModule> modules = ServiceLoader.load(
-        DruidModule.class, this.getClass().getClassLoader());
-    Iterable<Module> iter = (Iterable)modules;
-    
+    List<DruidModule> modules = Lists.newArrayList(
+      ServiceLoader.load(DruidModule.class, this.getClass().getClassLoader())
+    );
+    modules.add(new ServerModule());
+
     logger.info("Loading Modules....");
-    Injector injector = GuiceInjectors.makeStartupInjectorWithModules(iter);
+    Injector injector = GuiceInjectors.makeStartupInjectorWithModules(modules);
 
     jsonMapper = injector.getInstance(ObjectMapper.class);
     for(DruidModule m : modules) {

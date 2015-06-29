@@ -21,6 +21,10 @@
             <artifactId>druid-processing</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.druid</groupId>
+            <artifactId>druid-server</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
         </dependency>
