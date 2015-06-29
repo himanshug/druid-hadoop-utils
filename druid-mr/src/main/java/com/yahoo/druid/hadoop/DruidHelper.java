@@ -15,17 +15,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
-import io.druid.jackson.DefaultObjectMapper;
-import io.druid.segment.loading.DataSegmentPusherUtil;
 import io.druid.timeline.DataSegment;
-import io.druid.timeline.TimelineObjectHolder;
-import io.druid.timeline.VersionedIntervalTimeline;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -40,23 +36,16 @@ public class DruidHelper
   public List<String> getSegmentPathsToLoad(final String dataSource, final Interval interval,
       final String storageDir, final String overlordUrl) {
     List<DataSegment> segmentsToLoad = getSegmentsToLoad(dataSource, interval, overlordUrl);
-    VersionedIntervalTimeline<String, DataSegment> timeline = new VersionedIntervalTimeline<String, DataSegment>(
-          Ordering.<String>natural().nullsFirst()
-      );
-    for (DataSegment segment : segmentsToLoad) {
-      timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(segment));
-    }
-    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(interval);
-    
-    return Lists.transform(timeLineSegments, new Function<TimelineObjectHolder<String, DataSegment>, String>() {
-      @Override
-      public String apply(TimelineObjectHolder<String, DataSegment> input)
-      {
-        DataSegment segment = input.getObject().getChunk(0).getObject();
-        //TODO: make sure that there is no problem if storageDir ends with a / already
-        return storageDir + "/" + dataSource + "/" + DataSegmentPusherUtil.getHdfsStorageDir(segment) + "/index.zip";
+
+    return Lists.transform(
+      segmentsToLoad, new Function<DataSegment, String>() {
+        @Nullable
+        @Override
+        public String apply(DataSegment segment) {
+          return (String)segment.getLoadSpec().get("path");
+        }
       }
-    });
+    );
   }
 
   protected List<DataSegment> getSegmentsToLoad(String dataSource, Interval interval, String overlordUrl) {
@@ -100,8 +89,8 @@ public class DruidHelper
         Throwables.propagate(ex);
       }
     }
-    
-    throw new RuntimeException("failed to find list of segments from overlord");
+
+    throw new RuntimeException(String.format( "failed to find list of segments, dataSource[%s], interval[%s], overlord[%s]", dataSource, interval, overlordUrl));
   }
 
   protected String getSegmentListUsedActionJson(String dataSource, String interval) {
