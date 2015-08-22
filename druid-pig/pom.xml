@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.yahoo.druid.hadoop-utils</groupId>
         <artifactId>druid-hadoop-utils</artifactId>
-        <version>0.0.1-ALPHA</version>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>druid-pig</artifactId>

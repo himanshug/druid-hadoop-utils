@@ -10,29 +10,34 @@
 */
 package com.yahoo.druid.pig;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import io.druid.granularity.QueryGranularity;
+import io.druid.indexer.hadoop.DatasourceIngestionSpec;
 import io.druid.query.filter.DimFilter;
+import org.joda.time.Interval;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
-import com.yahoo.druid.hadoop.SegmentLoadSpec;
-
 public class PigSegmentLoadSpec
 {
-  private List<String> dimensions;
-  private List<Metric> metrics;
-  private DimFilter filter;
+  private final List<String> dimensions;
+  private final List<Metric> metrics;
+  private final QueryGranularity granularity;
+  private final DimFilter filter;
 
   @JsonCreator
-  public PigSegmentLoadSpec(@JsonProperty("dimensions") List<String> dimensions,
+  public PigSegmentLoadSpec(
+      @JsonProperty("dimensions") List<String> dimensions,
       @JsonProperty("metrics") List<Metric> metrics,
+      @JsonProperty("granularity") QueryGranularity granularity,
       @JsonProperty("filter") DimFilter filter)
   {
     this.dimensions = Preconditions.checkNotNull(dimensions, "null dimensions");
     this.metrics = Preconditions.checkNotNull(metrics, "null metrics");
+    this.granularity = granularity == null ? QueryGranularity.NONE : granularity;
     this.filter = filter;
   }
 
@@ -54,12 +59,20 @@ public class PigSegmentLoadSpec
     return filter;
   }
   
-  public SegmentLoadSpec toSegmentLoadSpec() {
+  public DatasourceIngestionSpec toDatasourceIngestionSpec(String dataSource, Interval interval) {
     List<String> metricStrs = new ArrayList<>(metrics.size());
     for(Metric m : metrics) {
       metricStrs.add(m.getName());
     }
-    return new SegmentLoadSpec(dimensions, metricStrs, filter);
+
+    return new DatasourceIngestionSpec(
+        dataSource,
+        interval,
+        filter,
+        granularity,
+        dimensions,
+        metricStrs
+    );
   }
 }
 

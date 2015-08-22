@@ -5,13 +5,13 @@
 
     <groupId>com.yahoo.druid.hadoop-utils</groupId>
     <artifactId>druid-hadoop-utils</artifactId>
-    <version>0.0.1-ALPHA</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <druid.version>0.7.2</druid.version>
+        <druid.version>0.8.2-SNAPSHOT</druid.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <hadoop.version>2.3.0</hadoop.version>
+        <hadoop.version>2.6.0</hadoop.version>
     </properties>
 
     <modules>
@@ -57,6 +57,11 @@
             <dependency>
                 <groupId>io.druid</groupId>
                 <artifactId>druid-server</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.druid</groupId>
+                <artifactId>druid-indexing-hadoop</artifactId>
                 <version>${druid.version}</version>
             </dependency>
             <dependency>

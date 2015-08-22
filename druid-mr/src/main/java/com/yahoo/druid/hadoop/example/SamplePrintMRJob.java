@@ -45,10 +45,9 @@ public class SamplePrintMRJob extends Configured implements Tool
     //job.getConfiguration().set("mapreduce.map.memory.mb", "1024");
     
     
-    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_STORAGE_STORAGE_DIR, "/tmp/druid/storage");
     job.getConfiguration().set(DruidInputFormat.CONF_DRUID_OVERLORD_HOSTPORT, "localhost:8080");
-    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_DATASOURCE, "wikipedia");
-    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_INTERVAL, "2009-01-01T00:00:00.000/2050-01-01T00:00:00.000");
+//    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_DATASOURCE, "wikipedia");
+//    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_INTERVAL, "2009-01-01T00:00:00.000/2050-01-01T00:00:00.000");
     job.getConfiguration().set(DruidInputFormat.CONF_DRUID_SCHEMA_FILE, "/tmp/druid/schema/druid_fun_mr.json");
     
     job.setMapperClass(DruidPrintMapper.class);
