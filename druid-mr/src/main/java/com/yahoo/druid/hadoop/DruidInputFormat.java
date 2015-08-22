@@ -90,6 +90,8 @@ public class DruidInputFormat extends DatasourceInputFormat
         ingestionSpec.getInterval(),
         overlordUrl
     );
+
+    logger.info("segments to read [%s]", segments);
     conf.set(CONF_INPUT_SEGMENTS, segments);
 
     return super.getSplits(context);
@@ -112,9 +114,10 @@ public class DruidInputFormat extends DatasourceInputFormat
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("content-type", "application/json");
+        conn.setRequestProperty("Accept", "*/*");
         conn.setUseCaches(false);
         conn.setDoOutput(true);
-        conn.setConnectTimeout(60000); //TODO: 60 secs, shud be configurable?
+        conn.setConnectTimeout(60000);
         OutputStream out = conn.getOutputStream();
         out.write(requestJson.getBytes());
         out.close();
