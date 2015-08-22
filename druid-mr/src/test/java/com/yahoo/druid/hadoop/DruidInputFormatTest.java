@@ -13,10 +13,8 @@ package com.yahoo.druid.hadoop;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.yahoo.druid.hadoop.example.SamplePrintMRJob;
 import io.druid.data.input.InputRow;
-import io.druid.indexer.hadoop.DatasourceIngestionSpec;
 import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -24,7 +22,6 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -38,14 +35,14 @@ import java.util.Map;
 public class DruidInputFormatTest
 {
   private OverlordTestServer server;
-  private int port;
+  private int overlordTestPort;
 
   @BeforeClass
   public void setUpClass() throws Exception
   {
     server = new OverlordTestServer();
     server.start();
-    port = server.getPort();
+    overlordTestPort = server.getPort();
   }
 
   @AfterClass
@@ -62,27 +59,9 @@ public class DruidInputFormatTest
         "Druid-Loader-Sample-Test-Job"
     );
 
-    job.setJarByClass(SamplePrintMRJob.class);
-
     job.getConfiguration().set("mapreduce.job.acl-view-job", "*");
-//    job.getConfiguration().set("mapreduce.job.queuename", "default");
     job.getConfiguration().set("mapreduce.map.java.opts", "-Duser.timezone=UTC");
-    //job.getConfiguration().set("mapreduce.map.memory.mb", "1024");
-
-
-    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_OVERLORD_HOSTPORT, "localhost:" + port);
-//    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_DATASOURCE, "wikipedia");
-//    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_INTERVAL, "2009-01-01T00:00:00.000/2050-01-01T00:00:00.000");
-
-    DatasourceIngestionSpec expected = new DatasourceIngestionSpec(
-        "testDataSource",
-        Interval.parse("1970/3000"),
-        null,
-        null,
-        Lists.newArrayList("host"),
-        Lists.newArrayList("visited_sum", "unique_hosts")
-    );
-
+    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_OVERLORD_HOSTPORT, "localhost:" + overlordTestPort);
     job.getConfiguration().set(
         DruidInputFormat.CONF_DRUID_SCHEMA,
         "{"
@@ -98,7 +77,7 @@ public class DruidInputFormatTest
     job.setNumReduceTasks(0);
 
     job.setOutputKeyClass(NullWritable.class);
-    job.setOutputValueClass(InputRow.class);
+    job.setOutputValueClass(NullWritable.class);
 
     job.setInputFormatClass(DruidInputFormat.class);
     job.setOutputFormatClass(NullOutputFormat.class);
