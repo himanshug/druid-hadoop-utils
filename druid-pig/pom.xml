@@ -12,7 +12,7 @@
     <artifactId>druid-pig</artifactId>
 
     <properties>
-        <pig.version>0.11.1</pig.version>
+        <pig.version>0.15.0</pig.version>
     </properties>
 
     <dependencies>
@@ -29,6 +29,13 @@
             <groupId>org.apache.pig</groupId>
             <artifactId>pig</artifactId>
             <version>${pig.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pig</groupId>
+            <artifactId>pigunit</artifactId>
+            <version>${pig.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
