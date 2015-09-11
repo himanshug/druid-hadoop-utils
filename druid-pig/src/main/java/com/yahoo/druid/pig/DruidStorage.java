@@ -18,7 +18,6 @@ import io.druid.indexer.hadoop.DatasourceRecordReader;
 import io.druid.segment.serde.ComplexMetricSerde;
 import io.druid.segment.serde.ComplexMetrics;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -265,7 +264,6 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
           in,
           PigSegmentLoadSpec.class
       );
-      in.close();
       return spec;
     }
     finally {

@@ -8,6 +8,6 @@ describe A;
 B = group A by (druid_timestamp);
 describe B;
 
-C = foreach B generate group.druid_timestamp, SUM(A.visited_sum);
+C = foreach B generate group, SUM(A.visited_sum);
 
 -- store C into '/tmp/test'
