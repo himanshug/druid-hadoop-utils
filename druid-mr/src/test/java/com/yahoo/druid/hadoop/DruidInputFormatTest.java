@@ -83,6 +83,10 @@ public class DruidInputFormatTest
     job.setOutputFormatClass(NullOutputFormat.class);
 
     Assert.assertTrue(job.waitForCompletion(true));
+
+    //TODO: somehow verify that the verifyRows in SampleMapper.run() is actually called, may be that
+    //creates a file and you verify that indeed that file exists at this point or something like
+    //that
   }
 
   public static class SampleMapper extends Mapper<NullWritable, InputRow, NullWritable, NullWritable>
