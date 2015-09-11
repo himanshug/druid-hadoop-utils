@@ -10,11 +10,18 @@
  */
 package com.yahoo.druid.hadoop;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Ordering;
 import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.indexer.hadoop.DatasourceIngestionSpec;
 import io.druid.indexer.hadoop.DatasourceInputFormat;
+import io.druid.indexer.hadoop.WindowedDataSegment;
+import io.druid.timeline.DataSegment;
+import io.druid.timeline.TimelineObjectHolder;
+import io.druid.timeline.VersionedIntervalTimeline;
+import io.druid.timeline.partition.PartitionChunk;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -27,6 +34,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 //TODO: DatasourceInputSplit.getLocations() returns empty array which might mess up Pig loader
@@ -85,14 +93,32 @@ public class DruidInputFormat extends DatasourceInputFormat
         schemaStr,
         DatasourceIngestionSpec.class
     );
-    String segments = getSegmentsToLoad(
+    String segmentsStr = getSegmentsToLoad(
         ingestionSpec.getDataSource(),
         ingestionSpec.getInterval(),
         overlordUrl
     );
+    logger.info("segments list received from overlord = [%s]", segmentsStr);
 
-    logger.info("segments to read [%s]", segments);
-    conf.set(CONF_INPUT_SEGMENTS, segments);
+    List<DataSegment> segmentsList = HadoopDruidIndexerConfig.jsonMapper.readValue(
+        segmentsStr,
+        new TypeReference<List<DataSegment>>()
+        {
+        }
+    );
+    VersionedIntervalTimeline<String, DataSegment> timeline = new VersionedIntervalTimeline<>(Ordering.natural());
+    for (DataSegment segment : segmentsList) {
+      timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(segment));
+    }
+    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(ingestionSpec.getInterval());
+    final List<WindowedDataSegment> windowedSegments = new ArrayList<>();
+    for (TimelineObjectHolder<String, DataSegment> holder : timeLineSegments) {
+      for (PartitionChunk<DataSegment> chunk : holder.getObject()) {
+        windowedSegments.add(new WindowedDataSegment(chunk.getObject(), holder.getInterval()));
+      }
+    }
+
+    conf.set(CONF_INPUT_SEGMENTS, HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(windowedSegments));
 
     return super.getSplits(context);
   }
