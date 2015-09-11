@@ -13,7 +13,6 @@ package com.yahoo.druid.hadoop;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.yahoo.druid.hadoop.example.SamplePrintMRJob;
 import io.druid.data.input.InputRow;
 import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
 import org.apache.hadoop.conf.Configuration;

@@ -40,5 +40,12 @@
             <version>${pig.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.yahoo.druid.hadoop-utils</groupId>
+            <artifactId>druid-mr</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

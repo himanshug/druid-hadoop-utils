@@ -114,7 +114,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
 
       int len = 1 + spec.getDimensions().size() + spec.getMetrics().size();
       Tuple t = TupleFactory.getInstance().newTuple(len);
-      t.set(0, row.getTimestamp());
+      t.set(0, row.getTimestamp().toString());
 
       int i = 1;
       for (String s : spec.getDimensions()) {
