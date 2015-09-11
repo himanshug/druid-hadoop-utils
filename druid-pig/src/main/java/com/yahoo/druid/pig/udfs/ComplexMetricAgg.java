@@ -12,7 +12,7 @@ package com.yahoo.druid.pig.udfs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.yahoo.druid.hadoop.DruidInitialization;
+import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.BufferAggregator;
 import io.druid.query.extraction.ExtractionFn;
@@ -51,7 +51,7 @@ public abstract class ComplexMetricAgg<T> extends EvalFunc<T>
     protected final ObjectStrategy strategy;
 
     public ComplexMetricAgg(String aggFactorySpec, String metricType) {
-      ObjectMapper jsonMapper = DruidInitialization.getInstance().getObjectMapper();
+      ObjectMapper jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
       try {
         this.aggFactory = jsonMapper.readValue(aggFactorySpec, AggregatorFactory.class);
       } catch(IOException ex) {

@@ -11,9 +11,9 @@
 package com.yahoo.druid.pig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yahoo.druid.hadoop.DruidInitialization;
 import com.yahoo.druid.hadoop.DruidInputFormat;
 import io.druid.data.input.InputRow;
+import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.indexer.hadoop.DatasourceRecordReader;
 import io.druid.segment.serde.ComplexMetricSerde;
 import io.druid.segment.serde.ComplexMetrics;
@@ -90,7 +90,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
     this.schemaFile = schemaFile;
     this.interval = interval;
 
-    this.jsonMapper = DruidInitialization.getInstance().getObjectMapper();
+    this.jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
   }
 
   @Override
