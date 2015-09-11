@@ -41,7 +41,10 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -248,14 +251,28 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
       Job job
   ) throws IOException
   {
-    FileSystem fs = FileSystem.get(job.getConfiguration());
-    FSDataInputStream in = fs.open(new Path(schemaFile));
-    PigSegmentLoadSpec spec = jsonMapper.readValue(
-        in.getWrappedStream(),
-        PigSegmentLoadSpec.class
-    );
-    in.close();
-    return spec;
+    InputStream in = null;
+    try {
+      //first try to find schemaFile on the host, then on hdfs
+      File file = new File(schemaFile);
+      if (file.exists() && file.isFile()) {
+        in = new FileInputStream(file);
+      } else {
+        FileSystem fs = FileSystem.get(job.getConfiguration());
+        in = fs.open(new Path(schemaFile)).getWrappedStream();
+      }
+      PigSegmentLoadSpec spec = jsonMapper.readValue(
+          in,
+          PigSegmentLoadSpec.class
+      );
+      in.close();
+      return spec;
+    }
+    finally {
+      if (in != null) {
+        in.close();
+      }
+    }
   }
 
   @Override
