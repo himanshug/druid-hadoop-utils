@@ -43,6 +43,13 @@ public class DruidStorageTest
     test = new PigTest("/home/himanshu/work/druid-hadoop-utils/druid-pig/src/test/resources/sample.pig", new String[]{"port=" + overlordTestPort});
 
     String[] output = { "(450)" };
-    test.assertOutput("C", output);
+    test.assertOutput(
+        "D",
+        new String[]{
+            "((2014-10-22T00:00:00.000Z,(,a.example.com)),100,1.0002442201269182)",
+            "((2014-10-22T01:00:00.000Z,(,b.example.com)),150,1.0002442201269182)",
+            "((2014-10-22T02:00:00.000Z,(,c.example.com)),200,1.0002442201269182)"
+        }
+    );
   }
 }
