@@ -14,16 +14,16 @@ import java.nio.ByteBuffer;
 
 import io.druid.query.aggregation.BufferAggregator;
 
-public class LongFinalizingComplexMetricAgg  extends ComplexMetricAgg<Long>
+public class FloatFinalizingAggregatorFactoryAdapter extends AggregatorFactoryAdapter<Float>
 {
-  public LongFinalizingComplexMetricAgg(String aggFactorySpec, String metricType)
+  public FloatFinalizingAggregatorFactoryAdapter(String aggFactorySpec, String metricType)
   {
     super(aggFactorySpec, metricType);
   }
   
   @Override
-  protected Long exec(BufferAggregator agg, ByteBuffer buff)
+  protected Float exec(BufferAggregator agg, ByteBuffer buff)
   {
-    return (Long)aggFactory.finalizeComputation(agg.get(buff,0));
+    return (Float)aggFactory.finalizeComputation(agg.get(buff,0));
   }
 }

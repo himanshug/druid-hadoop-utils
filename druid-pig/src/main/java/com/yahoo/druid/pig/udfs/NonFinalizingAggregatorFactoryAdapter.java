@@ -16,9 +16,9 @@ import io.druid.query.aggregation.BufferAggregator;
 
 import org.apache.pig.data.DataByteArray;
 
-public class NonFinalizingComplexMetricAgg extends ComplexMetricAgg<DataByteArray>
+public class NonFinalizingAggregatorFactoryAdapter extends AggregatorFactoryAdapter<DataByteArray>
 {
-  public NonFinalizingComplexMetricAgg(String aggFactorySpec, String metricType)
+  public NonFinalizingAggregatorFactoryAdapter(String aggFactorySpec, String metricType)
   {
     super(aggFactorySpec, metricType);
   }

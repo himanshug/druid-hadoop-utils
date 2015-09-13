@@ -41,16 +41,16 @@ import java.util.Iterator;
 /**
  * Generic UDF to work with any druid complex metric aggregation. 
  */
-public abstract class ComplexMetricAgg<T> extends EvalFunc<T>
+public abstract class AggregatorFactoryAdapter<T> extends EvalFunc<T>
 {
-    private static final Log LOG = LogFactory.getLog(ComplexMetricAgg.class);
+    private static final Log LOG = LogFactory.getLog(AggregatorFactoryAdapter.class);
 
     private static final TupleFactory tupleFactory = TupleFactory.getInstance();
 
     protected final AggregatorFactory aggFactory;
     protected final ObjectStrategy strategy;
 
-    public ComplexMetricAgg(String aggFactorySpec, String metricType) {
+    public AggregatorFactoryAdapter(String aggFactorySpec, String metricType) {
       ObjectMapper jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
       try {
         this.aggFactory = jsonMapper.readValue(aggFactorySpec, AggregatorFactory.class);
