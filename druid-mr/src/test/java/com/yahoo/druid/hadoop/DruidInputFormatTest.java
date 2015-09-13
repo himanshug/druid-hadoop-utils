@@ -15,17 +15,23 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.druid.data.input.InputRow;
 import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.joda.time.DateTime;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +41,9 @@ public class DruidInputFormatTest
 {
   private OverlordTestServer server;
   private int overlordTestPort;
+
+  @Rule
+  private TemporaryFolder tempFolder = new TemporaryFolder();
 
   @BeforeClass
   public void setUpClass() throws Exception
@@ -79,16 +88,20 @@ public class DruidInputFormatTest
     job.setOutputValueClass(NullWritable.class);
 
     job.setInputFormatClass(DruidInputFormat.class);
-    job.setOutputFormatClass(NullOutputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+
+    String outputPath = tempFolder.newFolder() + "/out";
+    TextOutputFormat.setOutputPath(job, new Path(outputPath));
 
     Assert.assertTrue(job.waitForCompletion(true));
 
-    //TODO: somehow verify that the verifyRows in SampleMapper.run() is actually called, may be that
-    //creates a file and you verify that indeed that file exists at this point or something like
-    //that
+    //verify that the SampleMapper actually ran and verified the data
+    Assert.assertTrue(
+        FileUtils.readFileToString(new File(outputPath + "/part-m-00000")).startsWith("SUCCESS")
+    );
   }
 
-  public static class SampleMapper extends Mapper<NullWritable, InputRow, NullWritable, NullWritable>
+  public static class SampleMapper extends Mapper<NullWritable, InputRow, NullWritable, Text>
   {
     @Override
     public void run(Context context) throws IOException, InterruptedException
@@ -104,6 +117,8 @@ public class DruidInputFormatTest
         cleanup(context);
       }
       verifyRows(actuals);
+
+      context.write(NullWritable.get(), new Text("SUCCESS"));
     }
 
     private void verifyRows(List<InputRow> actualRows)
