@@ -48,8 +48,17 @@ public class SamplePrintMRJob extends Configured implements Tool
     job.getConfiguration().set(DruidInputFormat.CONF_DRUID_OVERLORD_HOSTPORT, "localhost:8080");
 //    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_DATASOURCE, "wikipedia");
 //    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_INTERVAL, "2009-01-01T00:00:00.000/2050-01-01T00:00:00.000");
-    job.getConfiguration().set(DruidInputFormat.CONF_DRUID_SCHEMA_FILE, "/tmp/druid/schema/druid_fun_mr.json");
-    
+    job.getConfiguration().set(
+        DruidInputFormat.CONF_DRUID_SCHEMA,
+        "{"
+        + "\"dataSource\":\"testDataSource\","
+        + "\"interval\":\"1970-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z\","
+        + "\"granularity\":\"NONE\","
+        + "\"dimensions\":[\"host\"],"
+        + "\"metrics\":[\"visited_sum\",\"unique_hosts\"]"
+        + "}"
+    );
+
     job.setMapperClass(DruidPrintMapper.class);
     job.setNumReduceTasks(0);
     

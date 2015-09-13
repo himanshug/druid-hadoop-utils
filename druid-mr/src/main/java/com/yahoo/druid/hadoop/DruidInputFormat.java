@@ -38,26 +38,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 //TODO: DatasourceInputSplit.getLocations() returns empty array which might mess up Pig loader
+// test that it works w/o that returning new String[]{"xxx"}
 
 /**
- * FIX THE DOCUMENTATION
  * Hadoop InputFormat to read data from Druid stored on hdfs.
  * <br/>
  * You have to provide following in the job configuration.
  * <br/>
  * <ul>
  * <li>druid.overlord.hostport - overlord host:port</li>
- * <li>druid.storage.storageDirectory - hdfs storage directory for druid segments</li>
- * <li>druid.datasource - druid datasource name</li>
- * <li>druid.datasource.interval - time interval for the segments to be read</li>
+ * <li>druid.datasource.schema - json string containing dataSource, interval, metrics , dimensions etc</li>
  * </ul>
  * <br/>
- * And, either one of following.
- * <ul>
- * <li>druid.datasource.schemafile - a json file containing name of metrics and dimensions</li>
- * <li>druid.datasource.schema - json string containing name of metrics and dimensions</li>
- * </ul>
  * For json schema details, see {@link DatasourceIngestionSpec}
+ *
+ * For example see src/test/..DruidInputFormatTest.java
  */
 public class DruidInputFormat extends DatasourceInputFormat
 {
@@ -65,9 +60,6 @@ public class DruidInputFormat extends DatasourceInputFormat
   private static final Logger logger = LoggerFactory.getLogger(DruidInputFormat.class);
 
   public static final String CONF_DRUID_OVERLORD_HOSTPORT = "druid.overlord.hostport";
-
-  //out of CONF_DRUID_SCHEMA and CONF_DRUID_SCHEMA_FILE, user should specify only one
-  public static final String CONF_DRUID_SCHEMA_FILE = "druid.datasource.schemafile";
 
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException
@@ -81,11 +73,10 @@ public class DruidInputFormat extends DatasourceInputFormat
     );
     logger.info("druid overlord url = " + overlordUrl);
 
-    //TODO: write code to read schema from "file"
     String schemaStr = conf.get(CONF_DRUID_SCHEMA);
     Preconditions.checkArgument(
         schemaStr != null && !schemaStr.isEmpty(),
-        "schema defined, either provide " + CONF_DRUID_SCHEMA + " or " + CONF_DRUID_SCHEMA_FILE
+        "schema undefined,  provide " + CONF_DRUID_SCHEMA
     );
     logger.info("schema = " + schemaStr);
 
