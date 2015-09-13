@@ -262,10 +262,16 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
     InputStream in = null;
     try {
       //first try to find schemaFile on the host, then on hdfs
-      File file = new File(schemaFile);
+      File file = null;
+      if (schemaFile.startsWith("/")) { //absolute path
+        file = new File(schemaFile);
+      } else { //search in classpath
+        file = new File(this.getClass().getClassLoader().getResource(schemaFile).getPath());
+      }
+
       if (file.exists() && file.isFile()) {
         in = new FileInputStream(file);
-      } else {
+      } else { //file must be on hdfs
         FileSystem fs = FileSystem.get(job.getConfiguration());
         in = fs.open(new Path(schemaFile)).getWrappedStream();
       }
