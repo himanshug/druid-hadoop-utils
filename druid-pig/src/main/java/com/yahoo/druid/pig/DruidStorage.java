@@ -12,6 +12,7 @@ package com.yahoo.druid.pig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yahoo.druid.hadoop.DruidInputFormat;
+import com.yahoo.druid.pig.udfs.DruidUtils;
 import io.druid.data.input.InputRow;
 import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.indexer.hadoop.DatasourceRecordReader;
@@ -132,7 +133,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
         i++;
       }
       for (Metric m : spec.getMetrics()) {
-        if (m.getType().equals("float") || m.getType().equals("long")) {
+        if (!DruidUtils.isComplex(m.getType())) {
           t.set(i, row.getRaw(m.getName()));
         } else {
           Object v = row.getRaw(m.getName());
