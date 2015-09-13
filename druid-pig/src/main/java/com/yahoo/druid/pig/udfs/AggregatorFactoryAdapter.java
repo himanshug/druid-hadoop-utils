@@ -38,9 +38,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
-/**
- * Generic UDF to work with any druid complex metric aggregation. 
- */
 public abstract class AggregatorFactoryAdapter<T> extends EvalFunc<T>
 {
     private static final Log LOG = LogFactory.getLog(AggregatorFactoryAdapter.class);
