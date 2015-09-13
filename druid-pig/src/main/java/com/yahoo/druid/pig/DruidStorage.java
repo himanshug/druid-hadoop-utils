@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -118,8 +119,16 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
 
       int i = 1;
       for (String s : spec.getDimensions()) {
-        //TODO: will this be enough for multi-valued dimensions?
-        t.set(i, row.getDimension(s));
+        List<String> values = row.getDimension(s);
+        if (values != null && values.size() > 0) {
+          Tuple d = TupleFactory.getInstance().newTuple(values.size());
+          for (String v : values) {
+            d.append(v);
+          }
+          t.set(i, d);
+        } else {
+          t.set(i, null);
+        }
         i++;
       }
       for (Metric m : spec.getMetrics()) {
@@ -142,7 +151,6 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
         }
         i++;
       }
-
       return t;
     }
     catch (InterruptedException ex) {
@@ -216,14 +224,14 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
     ResourceFieldSchema[] fields = new ResourceFieldSchema[len];
 
     fields[0] = new ResourceFieldSchema();
-    fields[0].setName("druid_timestamp");
+    fields[0].setName("__time");
     fields[0].setType(DataType.CHARARRAY);
 
     int i = 1;
     for (String s : spec.getDimensions()) {
       fields[i] = new ResourceFieldSchema();
       fields[i].setName(s);
-      fields[i].setType(DataType.CHARARRAY);
+      fields[i].setType(DataType.TUPLE);
       i++;
     }
     for (Metric m : spec.getMetrics()) {
