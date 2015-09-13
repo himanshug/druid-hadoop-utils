@@ -225,7 +225,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
     ResourceFieldSchema[] fields = new ResourceFieldSchema[len];
 
     fields[0] = new ResourceFieldSchema();
-    fields[0].setName("__time");
+    fields[0].setName("druid_timestamp");
     fields[0].setType(DataType.CHARARRAY);
 
     int i = 1;
