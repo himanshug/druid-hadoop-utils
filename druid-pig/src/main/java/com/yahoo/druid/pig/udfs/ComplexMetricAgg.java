@@ -58,11 +58,15 @@ public abstract class ComplexMetricAgg<T> extends EvalFunc<T>
         throw new IllegalArgumentException("failed to create aggregator factory", ex);
       }
 
-      ComplexMetricSerde cms = ComplexMetrics.getSerdeForType(metricType);
-      if(cms != null)
-        strategy = cms.getObjectStrategy(); //TODO: remove dep on deprecated ObjectStrategy
-      else
-        throw new IllegalArgumentException("failed to find object strategy for " + metricType);
+      if (DruidUtils.isComplex(metricType)) {
+        ComplexMetricSerde cms = ComplexMetrics.getSerdeForType(metricType);
+        if (cms != null)
+          strategy = cms.getObjectStrategy();
+        else
+          throw new IllegalArgumentException("failed to find object strategy for " + metricType);
+      } else {
+        strategy = null;
+      }
     }
     @Override
     public Schema outputSchema(Schema input) {
@@ -131,19 +135,51 @@ class InternalColumnSelectorFactory implements ColumnSelectorFactory
   @Override
   public LongColumnSelector makeLongColumnSelector(String paramString)
   {
-    throw new IllegalStateException("not supported");
+    return new LongColumnSelector()
+    {
+      @Override
+      public long get()
+      {
+        try {
+          Object obj = ((Tuple) inputs.next()).get(0);
+          if (obj instanceof Number) {
+            return ((Number)obj).longValue();
+          } else {
+            return Long.parseLong(obj.toString());
+          }
+        } catch(ExecException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    };
   }
 
   @Override
   public DimensionSelector makeDimensionSelector(String paramString, ExtractionFn extractionFn)
   {
-    throw new IllegalStateException("not supported");
+    throw new RuntimeException("not supported");
   }
 
   @Override
   public FloatColumnSelector makeFloatColumnSelector(String paramString)
   {
-    throw new IllegalStateException("not supported");
+    return new FloatColumnSelector()
+    {
+      @Override
+      public float get()
+      {
+        try {
+          Object obj = ((Tuple) inputs.next()).get(0);
+          if (obj instanceof Number) {
+            return ((Number)obj).floatValue();
+          } else {
+            return Float.parseFloat(obj.toString());
+          }
+        } catch(ExecException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    };
   }
 
   @Override
@@ -154,7 +190,7 @@ class InternalColumnSelectorFactory implements ColumnSelectorFactory
       @Override
       public Class classOfObject()
       {
-        throw new IllegalStateException("not supported");
+        return Object.class;
       }
 
       @Override
