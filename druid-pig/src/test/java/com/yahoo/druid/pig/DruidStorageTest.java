@@ -40,7 +40,8 @@ public class DruidStorageTest
   @Test
   public void testDataInFile() throws Exception
   {
-    test = new PigTest("/home/himanshu/work/druid-hadoop-utils/druid-pig/src/test/resources/druid_exporter.pig", new String[]{"port=" + overlordTestPort});
+    String scriptPath = this.getClass().getClassLoader().getResource("druid_exporter.pig").getPath();
+    test = new PigTest(scriptPath, new String[]{"port=" + overlordTestPort});
 
     String[] output = { "(450)" };
     test.assertOutput(
