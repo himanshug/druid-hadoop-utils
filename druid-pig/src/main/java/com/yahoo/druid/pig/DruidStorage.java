@@ -49,19 +49,22 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * TODO: fix doc if broken
  * A Pig loader to read data from druid segments stored on HDFS.
  * <br/>
  * How to Use?
  * <br/>
- * A = load '&lt;dataSource&gt;' using com.yahoo.druid.pig.DruidStorage('/hdfs/path/to/schema', '&lt;interval&gt;'); 
+ * A = load '&lt;dataSource&gt;' using com.yahoo.druid.pig.DruidStorage('/path/to/schema', '&lt;interval&gt;');
  * <br/>
- * Schema file is a json containing metrics and dimensions. See {@link PigSegmentLoadSpec}
+ * Schema file is a json containing metrics and dimensions. See {@link PigSegmentLoadSpec}. It could be available
+ * on localhost or on hdfs.
  *  <br/>
  * Also, set following in the job configuration.
  * <ul>
  * <li>druid.overlord.hostport</li>
- * <li>druid.storage.storageDirectory</li>
+ * for example
+ * -Ddruid.overlord.hostport=localhost:8083
+ *
+ * For example see src/test/...{DruidStorageTest and druid_exporter.pig}
  * </ul>
  */
 public class DruidStorage extends LoadFunc implements LoadMetadata

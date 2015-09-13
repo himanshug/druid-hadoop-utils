@@ -67,8 +67,6 @@ public abstract class AggregatorFactoryAdapter<T> extends EvalFunc<T>
     }
     @Override
     public Schema outputSchema(Schema input) {
-      //TODO: check the input schema?
-      //and return the output schema
         return null;
     }
 

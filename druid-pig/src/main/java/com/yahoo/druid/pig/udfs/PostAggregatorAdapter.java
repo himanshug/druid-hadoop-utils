@@ -60,8 +60,6 @@ public abstract class PostAggregatorAdapter<T> extends EvalFunc<T>
 
   @Override
   public Schema outputSchema(Schema input) {
-    //TODO: check the input schema?
-    //and return the output schema
     return null;
   }
 
