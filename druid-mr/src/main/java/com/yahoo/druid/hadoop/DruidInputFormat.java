@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
+import io.druid.data.input.InputRow;
 import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.indexer.hadoop.DatasourceIngestionSpec;
 import io.druid.indexer.hadoop.DatasourceInputFormat;
@@ -24,8 +25,11 @@ import io.druid.timeline.VersionedIntervalTimeline;
 import io.druid.timeline.partition.PartitionChunk;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,5 +182,11 @@ public class DruidInputFormat extends DatasourceInputFormat
            "\"dataSource\": \"" + dataSource + "\"," +
            "\"interval\": \"" + interval + "\"" +
            "}}";
+  }
+  @Override
+  public RecordReader<NullWritable, InputRow> createRecordReader(InputSplit split, TaskAttemptContext context)
+		  throws IOException, InterruptedException
+  {
+	return new DruidRecordReader();
   }
 }
