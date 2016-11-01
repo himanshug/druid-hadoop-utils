@@ -10,7 +10,6 @@
  */
 package com.yahoo.druid.hadoop;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -90,19 +89,19 @@ public class DruidInputFormat extends DatasourceInputFormat
         Iterables.getOnlyElement(ingestionSpec.getIntervals()),
         overlordUrl
     );
-    logger.info("segments list received from overlord = [%s]", segmentsStr);
+    logger.info(String.format("segments list received from overlord = [%s]", segmentsStr));
 
-    List<DataSegment> segmentsList = HadoopDruidIndexerConfig.JSON_MAPPER.readValue(
+    List<DataSegment> segmentsList = (HadoopDruidIndexerConfig.JSON_MAPPER.readValue(
         segmentsStr,
-        new TypeReference<List<DataSegment>>()
-        {
-        }
-    );
+        Segments.class
+    )).getSegments();
     VersionedIntervalTimeline<String, DataSegment> timeline = new VersionedIntervalTimeline<>(Ordering.natural());
     for (DataSegment segment : segmentsList) {
       timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(segment));
     }
-    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(Iterables.getOnlyElement(ingestionSpec.getIntervals()));
+    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(Iterables.getOnlyElement(
+                                                                                                 ingestionSpec.getIntervals()
+                                                                                             ));
     final List<WindowedDataSegment> windowedSegments = new ArrayList<>();
     for (TimelineObjectHolder<String, DataSegment> holder : timeLineSegments) {
       for (PartitionChunk<DataSegment> chunk : holder.getObject()) {

@@ -119,7 +119,7 @@ public class OverlordTestServer
                     this.getClass().getClassLoader().getResource("test-segment/index.zip").getPath()
                 )
             );
-        responseStr = "[" + jsonMapper.writeValueAsString(segment) + "]";
+        responseStr = "{ \"result\": [" + jsonMapper.writeValueAsString(segment) + "] }";
       }
       catch (IOException ex) {
         logger.error("failed to setup resource" + ex.toString(), ex);
