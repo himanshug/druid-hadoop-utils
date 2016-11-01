@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <druid.version>0.8.2</druid.version>
+        <druid.version>0.9.1</druid.version>
         <slf4j.version>1.7.7</slf4j.version>
         <hadoop.version>2.6.0</hadoop.version>
     </properties>

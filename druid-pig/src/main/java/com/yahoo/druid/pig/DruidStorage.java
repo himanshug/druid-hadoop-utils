@@ -97,7 +97,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
     this.schemaFile = schemaFile;
     this.interval = interval;
 
-    this.jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
+    this.jsonMapper = HadoopDruidIndexerConfig.JSON_MAPPER;
   }
 
   @Override

@@ -45,7 +45,7 @@ public abstract class PostAggregatorAdapter<T> extends EvalFunc<T>
   protected final List<Metric> columnTypes;
 
   public PostAggregatorAdapter(String aggFactorySpec, String inputSchema) {
-    ObjectMapper jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
+    ObjectMapper jsonMapper = HadoopDruidIndexerConfig.JSON_MAPPER;
     try {
       this.aggFactory = jsonMapper.readValue(aggFactorySpec, PostAggregator.class);
       this.columnTypes = jsonMapper.readValue(

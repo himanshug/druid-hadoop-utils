@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.BufferAggregator;
-import io.druid.query.extraction.ExtractionFn;
+import io.druid.query.dimension.DimensionSpec;
 import io.druid.segment.ColumnSelectorFactory;
 import io.druid.segment.DimensionSelector;
 import io.druid.segment.FloatColumnSelector;
@@ -48,7 +48,7 @@ public abstract class AggregatorFactoryAdapter<T> extends EvalFunc<T>
     protected final ObjectStrategy strategy;
 
     public AggregatorFactoryAdapter(String aggFactorySpec, String metricType) {
-      ObjectMapper jsonMapper = HadoopDruidIndexerConfig.jsonMapper;
+      ObjectMapper jsonMapper = HadoopDruidIndexerConfig.JSON_MAPPER;
       try {
         this.aggFactory = jsonMapper.readValue(aggFactorySpec, AggregatorFactory.class);
       } catch(IOException ex) {
@@ -150,7 +150,7 @@ class InternalColumnSelectorFactory implements ColumnSelectorFactory
   }
 
   @Override
-  public DimensionSelector makeDimensionSelector(String paramString, ExtractionFn extractionFn)
+  public DimensionSelector makeDimensionSelector(DimensionSpec dimensionSpec)
   {
     throw new RuntimeException("not supported");
   }

@@ -13,6 +13,8 @@ package com.yahoo.druid.pig;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import io.druid.granularity.QueryGranularities;
 import io.druid.granularity.QueryGranularity;
 import io.druid.indexer.hadoop.DatasourceIngestionSpec;
 import io.druid.query.filter.DimFilter;
@@ -37,7 +39,7 @@ public class PigSegmentLoadSpec
   {
     this.dimensions = Preconditions.checkNotNull(dimensions, "null dimensions");
     this.metrics = Preconditions.checkNotNull(metrics, "null metrics");
-    this.granularity = granularity == null ? QueryGranularity.NONE : granularity;
+    this.granularity = granularity == null ? QueryGranularities.NONE : granularity;
     this.filter = filter;
   }
 
@@ -67,11 +69,14 @@ public class PigSegmentLoadSpec
 
     return new DatasourceIngestionSpec(
         dataSource,
-        interval,
+        null,
+        ImmutableList.of(interval),
+        null,
         filter,
         granularity,
         dimensions,
-        metricStrs
+        metricStrs,
+        true
     );
   }
 }

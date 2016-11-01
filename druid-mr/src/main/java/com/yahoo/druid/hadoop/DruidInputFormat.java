@@ -13,6 +13,7 @@ package com.yahoo.druid.hadoop;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import io.druid.indexer.HadoopDruidIndexerConfig;
 import io.druid.indexer.hadoop.DatasourceIngestionSpec;
@@ -80,18 +81,18 @@ public class DruidInputFormat extends DatasourceInputFormat
     );
     logger.info("schema = " + schemaStr);
 
-    DatasourceIngestionSpec ingestionSpec = HadoopDruidIndexerConfig.jsonMapper.readValue(
+    DatasourceIngestionSpec ingestionSpec = HadoopDruidIndexerConfig.JSON_MAPPER.readValue(
         schemaStr,
         DatasourceIngestionSpec.class
     );
     String segmentsStr = getSegmentsToLoad(
         ingestionSpec.getDataSource(),
-        ingestionSpec.getInterval(),
+        Iterables.getOnlyElement(ingestionSpec.getIntervals()),
         overlordUrl
     );
     logger.info("segments list received from overlord = [%s]", segmentsStr);
 
-    List<DataSegment> segmentsList = HadoopDruidIndexerConfig.jsonMapper.readValue(
+    List<DataSegment> segmentsList = HadoopDruidIndexerConfig.JSON_MAPPER.readValue(
         segmentsStr,
         new TypeReference<List<DataSegment>>()
         {
@@ -101,7 +102,7 @@ public class DruidInputFormat extends DatasourceInputFormat
     for (DataSegment segment : segmentsList) {
       timeline.add(segment.getInterval(), segment.getVersion(), segment.getShardSpec().createChunk(segment));
     }
-    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(ingestionSpec.getInterval());
+    final List<TimelineObjectHolder<String, DataSegment>> timeLineSegments = timeline.lookup(Iterables.getOnlyElement(ingestionSpec.getIntervals()));
     final List<WindowedDataSegment> windowedSegments = new ArrayList<>();
     for (TimelineObjectHolder<String, DataSegment> holder : timeLineSegments) {
       for (PartitionChunk<DataSegment> chunk : holder.getObject()) {
@@ -109,7 +110,7 @@ public class DruidInputFormat extends DatasourceInputFormat
       }
     }
 
-    conf.set(CONF_INPUT_SEGMENTS, HadoopDruidIndexerConfig.jsonMapper.writeValueAsString(windowedSegments));
+    conf.set(CONF_INPUT_SEGMENTS, HadoopDruidIndexerConfig.JSON_MAPPER.writeValueAsString(windowedSegments));
 
     return super.getSplits(context);
   }
