@@ -147,7 +147,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
               b.set(cms.toBytes(v));
               t.set(i, b);
             } else {
-              throw new IOException("Failed to find complex metric serde for " + m.getType());
+              throw new IOException("Failed to find complex metric serde for " + m.getName() + " of type " + m.getType());
             }
           } else {
             t.set(i, null);
