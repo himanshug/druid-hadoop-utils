@@ -12,7 +12,7 @@
     <artifactId>druid-pig</artifactId>
 
     <properties>
-        <pig.version>0.15.0</pig.version>
+        <pig.version>0.14.0</pig.version>
     </properties>
 
     <dependencies>
