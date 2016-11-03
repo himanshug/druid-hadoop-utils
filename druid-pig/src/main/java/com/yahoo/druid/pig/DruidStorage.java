@@ -125,7 +125,7 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
       for (String s : spec.getDimensions()) {
         List<String> values = row.getDimension(s);
         if (values != null && values.size() > 0) {
-          Tuple d = TupleFactory.getInstance().newTuple(values.size());
+          Tuple d = TupleFactory.getInstance().newTuple(0);
           for (String v : values) {
             d.append(v);
           }
