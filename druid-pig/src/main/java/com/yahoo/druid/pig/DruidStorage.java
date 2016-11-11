@@ -264,20 +264,27 @@ public class DruidStorage extends LoadFunc implements LoadMetadata
   {
     InputStream in = null;
     try {
-      //first try to find schemaFile on the host, then on hdfs
-      File file = null;
-      if (schemaFile.startsWith("/")) { //absolute path
-        file = new File(schemaFile);
-      } else { //search in classpath
-        file = new File(this.getClass().getClassLoader().getResource(schemaFile).getPath());
+      //first try to find schemaFile on the hdfs, then on host, then on classpath
+
+      FileSystem fs = FileSystem.get(job.getConfiguration());
+      Path p = new Path(schemaFile);
+      if (fs.exists(p)) {
+        in = fs.open(p).getWrappedStream();
+      } else {
+        if (schemaFile.startsWith("/")) { //absolute path
+          File file = new File(schemaFile);
+          if (file.exists() && file.isFile()) {
+            in = new FileInputStream(file);
+          }
+        } else { //search in classpath
+          in = this.getClass().getClassLoader().getResourceAsStream(schemaFile);
+        }
       }
 
-      if (file.exists() && file.isFile()) {
-        in = new FileInputStream(file);
-      } else { //file must be on hdfs
-        FileSystem fs = FileSystem.get(job.getConfiguration());
-        in = fs.open(new Path(schemaFile)).getWrappedStream();
+      if (in == null) {
+        throw new IOException("Can't find schemaFile " + schemaFile);
       }
+
       PigSegmentLoadSpec spec = jsonMapper.readValue(
           in,
           PigSegmentLoadSpec.class
