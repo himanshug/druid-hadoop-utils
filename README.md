@@ -2,6 +2,8 @@
 This is a collection of utilities to read druid segments stored on hdfs from hadoop. It contains a hadoop input format, pig loader and pig udf for druid complex metrics.
 This code is a prototype really and in very early stages, so some of the details might change. That said, I did test it to be working and will update as and when necessary. If you have any questions, please post them to druid community user groups.
 
+It works by fetching the list of segments from druid overlord and then directly reading the segments from HDFS. So, overlord is the only druid node used.
+
 ## Quick Start
 1. Get the code: `git clone https://github.com/himanshug/druid-hadoop-utils.git`
 1. Build: `mvn clean package`
